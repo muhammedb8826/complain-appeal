@@ -86,14 +86,16 @@ export default function RolesPage() {
 
   /* ---------- Generic pagination-aware fetchers ---------- */
 
-  const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
+  const authHeaders: Record<string, string> = token
+    ? { Authorization: `Bearer ${token}` }
+    : {};
 
   const fetchAllPaginated = async <T,>(startUrl: string): Promise<T[]> => {
     let all: T[] = [];
     let nextUrl: string | null = startUrl;
 
     while (nextUrl) {
-      const res = await fetch(nextUrl, { headers: authHeaders, cache: "no-store" });
+      const res = await fetch(nextUrl, { headers: authHeaders, cache: "no-store" }) as Response;
       if (!res.ok) throw new Error(`Failed to load: ${res.status}`);
       const data = await res.json();
 

@@ -84,7 +84,7 @@ const fetchAllPaginated = async <T,>(url: string, headers: Record<string, string
   let next: string | null = url;
   const all: T[] = [];
   while (next) {
-    const res = await fetch(next, { headers, cache: "no-store" });
+    const res = await fetch(next, { headers, cache: "no-store" }) as Response;
     if (!res.ok) throw new Error(`${res.status} while loading ${next}`);
     const data = await res.json();
     if (Array.isArray(data)) {
@@ -101,12 +101,20 @@ const fetchAllPaginated = async <T,>(url: string, headers: Record<string, string
   return all;
 };
 
+const isTransferRecord = (
+  row: TransferRecord | AssignmentRecord,
+): row is TransferRecord => "to_office" in row || "to_office_id" in row;
+
+const isAssignmentRecord = (
+  row: TransferRecord | AssignmentRecord,
+): row is AssignmentRecord => "to_user" in row || "to_user_id" in row;
+
 /* ===================== Page ===================== */
 
 export default function CaseActivityPage() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
 
   // Current user context
   const currentUserId = typeof window !== "undefined" ? localStorage.getItem("user_id") || "" : "";
@@ -249,15 +257,17 @@ export default function CaseActivityPage() {
     setSelectedRow(row);
     // Prefill the last chosen destination + reason:
     if (kind === "transfer") {
+      const transferRow = isTransferRecord(row) ? row : undefined;
       const currentTo =
-        row.to_office_id ??
-        (typeof (row as TransferRecord).to_office === "object" ? (row as TransferRecord).to_office?.id : (row as TransferRecord).to_office) ??
+        transferRow?.to_office_id ??
+        (typeof transferRow?.to_office === "object" ? transferRow?.to_office?.id : transferRow?.to_office) ??
         "";
       setSelectedOfficeId(currentTo ? String(currentTo) : "");
     } else {
+      const assignmentRow = isAssignmentRecord(row) ? row : undefined;
       const currentTo =
-        (row as AssignmentRecord).to_user_id ??
-        (typeof (row as AssignmentRecord).to_user === "object" ? (row as AssignmentRecord).to_user?.id : (row as AssignmentRecord).to_user) ??
+        assignmentRow?.to_user_id ??
+        (typeof assignmentRow?.to_user === "object" ? assignmentRow?.to_user?.id : assignmentRow?.to_user) ??
         "";
       setSelectedMemberId(currentTo ? String(currentTo) : "");
     }

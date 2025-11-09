@@ -55,7 +55,7 @@ const fetchAllPaginated = async <T,>(
   let next: string | null = url;
   const all: T[] = [];
   while (next) {
-    const res = await fetch(next, { headers, cache: "no-store" });
+    const res = await fetch(next, { headers, cache: "no-store" }) as Response;
     if (!res.ok) throw new Error(`${res.status} while loading ${next}`);
     const data = await res.json();
     if (Array.isArray(data)) {
@@ -80,7 +80,7 @@ export default function MyAssignedCasesPage() {
   const currentUserId =
     typeof window !== "undefined" ? localStorage.getItem("user_id") || "" : "";
 
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
 
   // Data + UX
   const [assignments, setAssignments] = useState<AssignmentRecord[]>([]);
@@ -190,9 +190,9 @@ export default function MyAssignedCasesPage() {
   };
 
   const fromNameOfRow = (r: AssignmentRecord) => {
-    if (typeof r.from_user === "object") {
-      const full = `${r.from_user.first_name || ""} ${r.from_user.last_name || ""}`.trim();
-      return full || r.from_user.email || r.from_user.username || String(r.from_user.id);
+  if (typeof r.from_user === "object" && r.from_user !== null) {
+    const full = `${r.from_user.first_name || ""} ${r.from_user.last_name || ""}`.trim();
+    return full || r.from_user.email || r.from_user.username || String(r.from_user.id);
     }
     const id = r.from_user_id ?? r.from_user;
     return id ? (fromNameMap[String(id)] || String(id)) : "—";

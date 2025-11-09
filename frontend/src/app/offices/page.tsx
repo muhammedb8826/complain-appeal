@@ -70,7 +70,9 @@ export default function OfficesPage() {
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
+  const authHeaders: Record<string, string> = token
+    ? { Authorization: `Bearer ${token}` }
+    : {};
 
   // Table + filters
   const [offices, setOffices] = useState<OfficeRow[]>([]);
@@ -135,7 +137,7 @@ export default function OfficesPage() {
     let nextUrl: string | null = startUrl;
 
     while (nextUrl) {
-      const res = await fetch(nextUrl, { headers: authHeaders, cache: "no-store" });
+      const res = await fetch(nextUrl, { headers: authHeaders, cache: "no-store" }) as Response;
       if (!res.ok) throw new Error(`Failed to load: ${res.status}`);
       const data = await res.json();
 

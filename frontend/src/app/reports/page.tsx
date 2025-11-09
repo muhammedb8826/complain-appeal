@@ -48,11 +48,14 @@ const allowedRoles = new Set([
   "President",
 ]);
 
-const fetchAllPaginated = async <T,>(url: string, headers: Record<string, string>): Promise<T[]> => {
+const fetchAllPaginated = async <T,>(
+  url: string,
+  headers: Record<string, string>,
+): Promise<T[]> => {
   let next: string | null = url;
   const all: T[] = [];
   while (next) {
-    const res = await fetch(next, { headers, cache: "no-store" });
+    const res = await fetch(next, { headers, cache: "no-store" }) as Response;
     if (!res.ok) throw new Error(`${res.status} while loading ${next}`);
     const data = await res.json();
     if (Array.isArray(data)) {
@@ -103,7 +106,9 @@ export default function ReportsPage() {
   const role =
     typeof window !== "undefined" ? localStorage.getItem("role") : null;
 
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  const headers: Record<string, string> = token
+    ? { Authorization: `Bearer ${token}` }
+    : {};
 
   // Guard
   useEffect(() => {

@@ -47,6 +47,13 @@ type EditForm = {
   officeIds: (string | number)[];
 };
 
+type HttpResponse = {
+  ok: boolean;
+  status: number;
+  json(): Promise<unknown>;
+  text(): Promise<string>;
+};
+
 /* ===================== Helpers ===================== */
 
 const allowedToManage = new Set(["Director", "President Office", "President"]);
@@ -55,7 +62,7 @@ const fetchAllPaginated = async <T,>(url: string, headers: Record<string, string
   let next: string | null = url;
   const all: T[] = [];
   while (next) {
-    const res = await fetch(next, { headers, cache: "no-store" });
+    const res = await fetch(next, { headers, cache: "no-store" }) as HttpResponse;
     if (!res.ok) throw new Error(`${res.status} while loading ${next}`);
     const data = await res.json();
     if (Array.isArray(data)) {
@@ -97,7 +104,7 @@ export default function AnnouncementsPage() {
   const role  = typeof window !== "undefined" ? localStorage.getItem("role")  : null;
 
   const canManage = !!role && allowedToManage.has(role);
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
 
   // Data
   const [rows, setRows] = useState<Announcement[]>([]);
@@ -237,7 +244,7 @@ export default function AnnouncementsPage() {
         method: "POST",
         headers: { "Content-Type": "application/json", ...headers },
         body: JSON.stringify(payload),
-      });
+      }) as HttpResponse;
       if (!res.ok) {
         const msg = await res.text();
         throw new Error(msg || `Create failed: ${res.status}`);
@@ -305,7 +312,7 @@ export default function AnnouncementsPage() {
         method: "PATCH",
         headers: { "Content-Type": "application/json", ...headers },
         body: JSON.stringify(payload),
-      });
+      }) as HttpResponse;
       if (!res.ok) {
         const msg = await res.text();
         throw new Error(msg || `Update failed: ${res.status}`);
@@ -331,7 +338,7 @@ export default function AnnouncementsPage() {
       const res = await fetch(`${API_URL}/announcements/${selected.id}/`, {
         method: "DELETE",
         headers,
-      });
+      }) as HttpResponse;
       if (!res.ok && res.status !== 204) {
         const msg = await res.text();
         throw new Error(msg || `Delete failed: ${res.status}`);
