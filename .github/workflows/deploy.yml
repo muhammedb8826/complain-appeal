@@ -4,15 +4,10 @@ on:
   push:
     branches:
       - master
-    paths:
-      - 'frontend/**'
 
 jobs:
   web-deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./frontend
 
     steps:
     - name: Checkout repository
@@ -35,7 +30,12 @@ jobs:
         server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: frontend/
+        local-dir: ./
         protocol: ftp
         exclude: |
-          /frontend/node_modules/**
+         .git/**
+         .github/**
+          node_modules/**
+         .next/cache/**
+         .env.production
+      # Optionally add any other files you don't need on the remote server
